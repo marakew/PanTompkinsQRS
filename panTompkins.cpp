@@ -428,7 +428,7 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
 
-	//TODO calculate sum delay by filters and skip rpeaks
+	//TODO calculate sum delay by filters and flush rpeaks from begin by false values
 	//TODO Q,S peaks
 	return rpeaks;
 }
