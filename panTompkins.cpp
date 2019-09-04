@@ -1,4 +1,6 @@
 
+#include <memory>
+#include <stdexcept>
 #include <deque>
 
 typedef int dataType;
@@ -47,9 +49,32 @@ typedef int dataType;
 	};
 
 
-	// DC filter
+	struct Filter
+	{
+		std::deque<dataType> process(const std::deque<dataType> & signal) = 0;
+		size_t delay() = 0;
+	};
 
-	std::deque<dataType> DCFilter(const std::deque<dataType> & signal)
+	struct DCFilter : public Filter	{ };
+	struct LowPassFilter : public Filter { };
+	struct HighPassFilter : public Filter { };
+	struct DerivativeFilter : public Filter { };
+	struct SquaredFilter : public Filter { };
+	struct MWI : public Filter { };
+
+	void normalize(std::deque<dataType> & values)
+	{
+		dataType max_value = values[0];
+		for (size_t index = 1; index < values.size(); ++index)
+			if (values[index] > max_value) max_value = values[index];
+	
+		for (size_t index = 0; index < values.size(); ++index)
+			values[i] /= max_value;
+	}
+
+	// DC filter, delay 1
+
+	std::deque<dataType> dcFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
 		for (size_t index = 0; index < signal.size(); ++index)
@@ -61,7 +86,7 @@ typedef int dataType;
 		return result;
 	}
 
-	// Low Pass filter
+	// Low Pass filter, delay 12	6!
 	// Implemented as proposed by the original paper.
 	// y(nT) = 2y(nT - T) - y(nT - 2T) + x(nT) - 2x(nT - 6T) + x(nT - 12T)
 
@@ -80,7 +105,7 @@ typedef int dataType;
 		return result;
 	}
 
-	// High Pass filter
+	// High Pass filter, delay 32	16!
 	// Implemented as proposed by the original paper.
 	// y(nT) = 32x(nT - 16T) - [y(nT - T) + x(nT) - x(nT - 32T)]
 
@@ -99,7 +124,7 @@ typedef int dataType;
 	}
 
 
-	// Derivative filter
+	// Derivative filter, delay 4	5!
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/8T)[-x(nT - 2T) - 2x(nT - T) + 2x(nT + T) + x(nT + 2T)]
 
@@ -123,7 +148,7 @@ typedef int dataType;
 		return result;
 	}
 
-	// Squared filter
+	// Squared filter, delay 0
 	// Implemented as proposed by the original paper.
 	// y(nT) = [x(nT)]^2.
 
@@ -138,7 +163,7 @@ typedef int dataType;
 		return result;
 	}
 
-	// Moving-Window Integration
+	// Moving-Window Integration, delay N/2 ???
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/N)[x(nT - (N - 1)T) + x(nT - (N - 2)T) + ... x(nT)]
 	// N, in samples, must be defined so that the window is ~150ms.
@@ -167,6 +192,8 @@ typedef int dataType;
 
 	struct panTompkins
 	{
+	private:
+		size_t samplefrequency;
 		size_t window;
 		size_t rrmin;
 		size_t rrmax;
@@ -184,14 +211,22 @@ typedef int dataType;
 
 		bool regular = true;
 
+		std::list<std::unique_ptr<Filter>> filters;
 	public:
 
 	explicit panTompkins(size_t fs) :
+		samplefrequency(fs),
 		window(0.15*fs),
 		rrmin(0.2*fs),
 		rrmax(0.36*fs),
 		
 	{
+		filters.push_back(std::make_unique<DCFilter>);
+		filters.push_back(std::make_unique<LowPassFilter>);
+		filters.push_back(std::make_unique<HighPassFilter>);
+		filters.push_back(std::make_unique<DerivativeFilter>);
+		filters.push_back(std::make_unique<SquaredFilter>);
+		filters.push_back(std::make_unique<MWI>);
 	}
 
 	std::deque<bool> detect(const std::deque<dataType> & signal);
@@ -242,29 +277,32 @@ typedef int dataType;
 
 	};
 
-const std::deque<dataType> normalize(const std::deque<dataType> & signal)
-{
-	//TODO
-	return signal;
-}
-
 std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 {
 	//TODO check for size, if more/less than XXX, throw exception
 
+	if (signal.size() < samplefrequency*2)
+		throw std::length_error("input signal too short");
+
+	//TODO
+	//std::deque<dataType> datas = signal;
+	//for (auto filter : filters) datas = filter.process(datas);
+
 	// DC was not proposed on the original paper.
 	// It is not necessary and can be removed if your sensor or database has no DC noise.
-	std::deque<dataType> dcblock = DCFilter(signal);
+	std::deque<dataType> dcblock = dcFilter(signal);
 
 	//1) Bandpass filter = LP + HP filter, filters work only for 200 Hz sampling rate
 	std::deque<dataType> lowpass = lowPassFilter(dcblock); 
-	std::deque<dataType> highpass = highpass(highPassFilter(lowpass));
+	std::deque<dataType> highpass = highPassFilter(lowpass);
+	//??? normalize(highpass);
 
 	//TODO for another fs
 	std::deque<dataType> bandpass = highpass;
 
 	//2) Differentiator
-	std::deque<dataType> derivative = highpass(derivativeFilter(bandpass));
+	std::deque<dataType> derivative = derivativeFilter(bandpass);
+	//??? normalize(derivative);
 
 	//3) Squaring
 	std::deque<dataType> squared = squaredFilter(derivative);
@@ -390,6 +428,7 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
 
+	//TODO calculate sum delay by filters and skip rpeaks
 	//TODO Q,S peaks
 	return rpeaks;
 }
