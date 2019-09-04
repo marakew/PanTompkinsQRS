@@ -242,6 +242,12 @@ typedef int dataType;
 
 	};
 
+const std::deque<dataType> normalize(const std::deque<dataType> & signal)
+{
+	//TODO
+	return signal;
+}
+
 std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 {
 	//TODO check for size, if more/less than XXX, throw exception
@@ -252,15 +258,13 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 
 	//1) Bandpass filter = LP + HP filter, filters work only for 200 Hz sampling rate
 	std::deque<dataType> lowpass = lowPassFilter(dcblock); 
-	std::deque<dataType> highpass = highPassFilter(lowpass);
-	//normalize
+	std::deque<dataType> highpass = highpass(highPassFilter(lowpass));
 
 	//TODO for another fs
 	std::deque<dataType> bandpass = highpass;
 
 	//2) Differentiator
-	std::deque<dataType> derivative = derivativeFilter(bandpass);
-	//normalize
+	std::deque<dataType> derivative = highpass(derivativeFilter(bandpass));
 
 	//3) Squaring
 	std::deque<dataType> squared = squaredFilter(derivative);
