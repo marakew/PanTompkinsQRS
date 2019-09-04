@@ -46,12 +46,12 @@ typedef int dataType;
 	};
 
 
-	// DC Block filter
+	// DC filter
 
 	std::deque<dataType> DCFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
-		for (int index = 0; index < signal.size(); ++index)
+		for (size_t index = 0; index < signal.size(); ++index)
 		{
 			dataType value = 0;
 			if (index >= 1) value = signal[index] - signal[index - 1] + 0.995 * result[index - 1];
@@ -67,7 +67,7 @@ typedef int dataType;
 	std::deque<dataType> lowPassFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
-		for (int index = 0; index < signal.size(); ++index)
+		for (size_t index = 0; index < signal.size(); ++index)
 		{
 			dataType value = signal[index];
 			if (index >= 1) value += 2 * result[index - 1];
@@ -86,7 +86,7 @@ typedef int dataType;
 	std::deque<dataType> highPassFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
-		for (int index = 0; index < signal.size(); ++index)
+		for (size_t index = 0; index < signal.size(); ++index)
 		{
 			dataType value = -signal[index];
 			if (index >= 1) value -= result[index - 1];
@@ -105,7 +105,7 @@ typedef int dataType;
 	std::deque<dataType> derivativeFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
-		for (int index = 2; index < signal.size() - 2; ++index)
+		for (size_t index = 2; index < signal.size() - 2; ++index)
 		{
 			dataType value = -signal[index - 2] - 2 * signal[index - 1] +
 					2 * signal[index + 1] + signal[index + 2];
@@ -129,7 +129,7 @@ typedef int dataType;
 	std::deque<dataType> squaredFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
-		for (int index = 0; index < signal.size(); ++index)
+		for (size_t index = 0; index < signal.size(); ++index)
 		{
 			dataType value = signal[index]*signal[index];
 			result.push_back(value);
@@ -146,9 +146,9 @@ typedef int dataType;
 	{
 		std::deque<dataType> result;
 		dataType value = 0;
-		for (int index = 0; index < signal.size(); ++index)
+		for (size_t index = 0; index < signal.size(); ++index)
 		{
-			int first = index - (N - 1);
+			int first = index - (N - 1); //???
 			value += signal[index] / N;
 			if (first > 0) value -= signal[first - 1] / N;
 			result.push_back(value);
@@ -156,10 +156,10 @@ typedef int dataType;
 		return result;
 	}
 
-	dataType slope(long unsigned int i, std::deque<dataType> & squared) const
+	dataType slope(size_t i, std::deque<dataType> & squared) const
 	{
 		dataType currentSlope = 0;
-		for (long unsigned int j = i - 10; j <= i; j++)
+		for (size_t j = i - 10; j <= i; j++)
 			if (squared[j] > currentSlope) currentSlope = squared[j];
 		return currentSlope;
 	}
@@ -192,8 +192,8 @@ typedef int dataType;
 
 	panTompkins(size_t fs) :
 		window(0.15*fs),
-		rrmin(0.2*fs), //(long unsigned int)(0.2*FS)
-		rrmax(0.36*fs), //(long unsigned int)(0.36*FS)
+		rrmin(0.2*fs),
+		rrmax(0.36*fs),
 		
 	{
 	}
@@ -203,7 +203,7 @@ typedef int dataType;
 	void updateRR(long unsigned int index)
 	{
 		rravg1 = 0;
-		for (long unsigned int i = 0; i < 7; i++)
+		for (size_t i = 0; i < 7; ++i)
 		{
 			rr1[i] = rr1[i+1];
 			rravg1 += rr1[i];
@@ -215,7 +215,7 @@ typedef int dataType;
 		if ((rr1[7] >= rrlow) && (rr1[7] <= rrhigh))
 		{
 			rravg2 = 0;
-			for (long unsigned int i = 0; i < 7; i++)
+			for (size_t i = 0; i < 7; ++i)
 			{
 				rr2[i] = rr2[i+1];
 				rravg2 += rr2[i];
@@ -270,14 +270,13 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 	//4) Moving window integration
 	std::deque<dataType> integral = MWI(squared, window);
 
-	for (long unsigned int i = 0; i < 8; ++i)
+	for (size_t i = 0; i < 8; ++i)
 	{
 		rr1[i] = 0;
 		rr2[i] = 0;
 	}
 
 	long unsigned int i;
-	long unsigned int j;
 
 	long unsigned int lastQRS = 0;
 	long unsigned int lastSlope = 0;
@@ -295,13 +294,6 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 
 		long unsigned int sample = current+1; //???
 
-		if ((integral[current] >= threshold_i.i1) ||
-		    (bandpass[current] >= threshold_f.i1))
-		{
-			peak_i = integral[current];
-			peak_f = bandpass[current];
-		}
-
 		if ((integral[current] >= threshold_i.i1) &&
 		    (bandpass[current] >= threshold_f.i1))
 		{
@@ -316,15 +308,15 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 					} else
 					{
 						lastSlope = currentSlope;
-						threshold_i.updateSignal(peak_i);
-						threshold_f.updateSignal(peak_f);
+						threshold_i.updateSignal(integral[current]);
+						threshold_f.updateSignal(bandpass[current]);
 						qrs = true;
 					}
 				} else
 				{
 					lastSlope = currentSlope;
-					threshold_i.updateSignal(peak_i);
-					threshold_f.updateSignal(peak_f);
+					threshold_i.updateSignal(integral[current]);
+					threshold_f.updateSignal(bandpass[current]);
 					qrs = true;
 				}
 			} else
@@ -400,6 +392,8 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 		rpeaks[current] = qrs;
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
+
+	//TODO Q,S peaks
 	return rpeaks;
 }
 
