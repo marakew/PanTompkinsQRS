@@ -12,7 +12,8 @@ typedef int dataType;
 		dataType spk = 0;
 		dataType npk = 0;
 
-		dataType thresh(const dataType signal, const dataType noise) const { return noise + 0.25 * (signal - noise); }
+		dataType thresh(const dataType signal, const dataType noise) const
+				{ return noise + 0.25 * (signal - noise); }
 
 		void set(dataType i)
 		{
@@ -166,13 +167,6 @@ typedef int dataType;
 
 	struct panTompkins
 	{
-		//std::deque<dataType> dcblock;
-		//std::deque<dataType> lowpass;
-		//std::deque<dataType> highpass;
-		//std::deque<dataType> derivative;
-		//std::deque<dataType> squared;
-		//std::deque<dataType> integral;
-
 		size_t window;
 		size_t rrmin;
 		size_t rrmax;
@@ -190,7 +184,9 @@ typedef int dataType;
 
 		bool regular = true;
 
-	panTompkins(size_t fs) :
+	public:
+
+	explicit panTompkins(size_t fs) :
 		window(0.15*fs),
 		rrmin(0.2*fs),
 		rrmax(0.36*fs),
@@ -198,54 +194,55 @@ typedef int dataType;
 	{
 	}
 
-	std::deque<dataType> detect(const std::deque<dataType> & signal);
+	std::deque<bool> detect(const std::deque<dataType> & signal);
 
-	void updateRR(long unsigned int index)
-	{
-		rravg1 = 0;
-		for (size_t i = 0; i < 7; ++i)
+	private:
+		void updateRR(int index)
 		{
-			rr1[i] = rr1[i+1];
-			rravg1 += rr1[i];
-		}
-		rr1[7] = index; //add
-		rravg1 += rr1[7];
-		rravg1 *= 0.125; // 1/8
-
-		if ((rr1[7] >= rrlow) && (rr1[7] <= rrhigh))
-		{
-			rravg2 = 0;
+			rravg1 = 0;
 			for (size_t i = 0; i < 7; ++i)
 			{
-				rr2[i] = rr2[i+1];
-				rravg2 += rr2[i];
+				rr1[i] = rr1[i+1];
+				rravg1 += rr1[i];
 			}
-			rr2[7] = rr1[7]; //add
-			rravg2 += rr2[7];
-			rravg2 *= 0.125; // 1/8
-
-			rrlow = 0.92 * rravg2;
-			rrhigh = 1.16 * rravg2;
-			rrmiss = 1.66 * rravg2;
-		}
-
-		bool prevRegular = regular;
-		if (rravg1 == rravg2)
-		{
-			regular = true;
-		} else {
-			regular = false;
-			if (prevRegular)
+			rr1[7] = index; //add
+			rravg1 += rr1[7];
+			rravg1 *= 0.125; // 1/8
+	
+			if ((rr1[7] >= rrlow) && (rr1[7] <= rrhigh))
 			{
-				threshold_i.half();
-				threshold_f.half();
+				rravg2 = 0;
+				for (size_t i = 0; i < 7; ++i)
+				{
+					rr2[i] = rr2[i+1];
+					rravg2 += rr2[i];
+				}
+				rr2[7] = rr1[7]; //add
+				rravg2 += rr2[7];
+				rravg2 *= 0.125; // 1/8
+	
+				rrlow = 0.92 * rravg2;
+				rrhigh = 1.16 * rravg2;
+				rrmiss = 1.66 * rravg2;
+			}
+
+			bool prevRegular = regular;
+			if (rravg1 == rravg2)
+			{
+				regular = true;
+			} else {
+				regular = false;
+				if (prevRegular)
+				{
+					threshold_i.half();
+					threshold_f.half();
+				}
 			}
 		}
-	}
 
 	};
 
-std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
+std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 {
 	//TODO check for size, if more/less than XXX, throw exception
 
@@ -279,14 +276,11 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 	long unsigned int i;
 
 	long unsigned int lastQRS = 0;
-	long unsigned int lastSlope = 0;
-
-	dataType peak_i = 0;
-	dataType peak_f = 0;
+	dataType lastSlope = 0;
 
 	regular = true;
 
-	std::deque<dataType> rpeaks;
+	std::deque<bool> rpeaks;
 
 	for (long unsigned int current = 0; current < signal.size(); ++current)
 	{
@@ -299,10 +293,10 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 		{
 			if (sample - lastQRS > rrmin)
 			{
-				long unsigned int currentSlope = slope(current, squared);
+				dataType currentSlope = slope(current, squared);
 				if (sample - lastQRS <= rrmax)
 				{
-					if (currentSlope <= (dataType)(lastSlope/2))
+					if (currentSlope <= lastSlope/2)
 					{
 						qrs = false;
 					} else
@@ -348,9 +342,9 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 					if ( (integral[i] > threshold_i.i2) &&
 					     (bandpass[i] > threshold_f.i2))
 					{
-						long unsigned int currentSlope = slope(i, squared);
+						dataType currentSlope = slope(i, squared);
 						if (
-							(currentSlope < (dataType)(lastSlope/2)) &&
+							(currentSlope < lastSlope/2) &&
 							(i + sample) < lastQRS + 0.36*lastQRS)
 						{
 							qrs = false;
@@ -363,7 +357,6 @@ std::deque<dataType> panTompkins::detect(const std::deque<dataType> & signal)
 
 							updateRR(sample - (current - i) - lastQRS);
 							lastQRS = sample - (current - i);
-
 							break;
 						}
 					}
