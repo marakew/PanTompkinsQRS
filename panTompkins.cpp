@@ -279,8 +279,6 @@ typedef int dataType;
 
 std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 {
-	//TODO check for size, if more/less than XXX, throw exception
-
 	if (signal.size() < samplefrequency*2)
 		throw std::length_error("input signal too short");
 
