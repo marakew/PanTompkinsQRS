@@ -182,7 +182,7 @@ typedef int dataType;
 		return result;
 	}
 
-	dataType slope(size_t i, std::deque<dataType> & squared) const
+	dataType slope(size_t i, std::deque<dataType> & squared)
 	{
 		dataType currentSlope = 0;
 		for (size_t j = i - 10; j <= i; j++)
