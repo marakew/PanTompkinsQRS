@@ -37,6 +37,9 @@ typedef int dataType;
 
 		bool regular = true;
 	public:
+		std::deque<bool> qpeaks;
+		std::deque<bool> rpeaks;
+		std::deque<bool> speaks;
 
 	explicit panTompkins(size_t fs = 360) :
 		samplefrequency(fs),
@@ -47,9 +50,13 @@ typedef int dataType;
 	{
 	}
 
-	std::deque<bool> detect(const std::deque<dataType> & signal);
+		void detectPeaks(const std::deque<dataType> & signal);
 
 	private:
+		void detectQpeaks(const std::deque<dataType> & bandpass);
+		void detectRpeaks(const std::deque<dataType> & bandpass);
+		void detectSpeaks(const std::deque<dataType> & bandpass);
+
 		void updateRR(int index)
 		{
 			rravg1 = 0;
@@ -95,7 +102,7 @@ typedef int dataType;
 
 	};
 
-std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
+void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 {
 	if (signal.size() < samplefrequency*2)
 		throw std::length_error("input signal too short");
@@ -112,6 +119,20 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 	//TODO for another fs
 	std::deque<dataType> bandpass = highpass;
 
+	qpeaks.clear();
+	rpeaks.clear();
+	speaks.clear();
+
+	//TODO calculate sum delay by filters and flush rpeaks from begin by false values
+
+	detectRpeaks(bandpass);
+
+	detectQpeaks(bandpass);
+	detectSpeaks(bandpass);
+}
+
+void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
+{
 	//2) Differentiator
 	std::deque<dataType> derivative = derivativeFilter(bandpass);
 	//??? normalize(derivative);
@@ -127,14 +148,10 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 		rr2[i] = 0;
 	}
 
-	size_t i;
-
 	size_t lastQRS = 0;
 	dataType lastSlope = 0;
 
 	regular = true;
-
-	std::deque<bool> rpeaks;
 
 	for (size_t current = 0; current < signal.size(); ++current)
 	{
@@ -188,6 +205,7 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 			if ((sample - lastQRS > (size_t)rrmiss) &&
 			    (sample - lastQRS > rrmin))
 			{
+				size_t i;
 				//do search
 				for (i = current - (sample - lastQRS) + rrmin;
 					i < (size_t)current;
@@ -239,9 +257,5 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 		rpeaks[current] = qrs;
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
-
-	//TODO calculate sum delay by filters and flush rpeaks from begin by false values
-	//TODO Q,S peaks
-	return rpeaks;
 }
 
