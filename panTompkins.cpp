@@ -229,6 +229,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 							(currentSlope < lastSlope/2) &&
 							(i + sample) < lastQRS + 0.36*lastQRS)
 						{
+							//T-wave found
 							qrs = false;
 						} else
 						{
