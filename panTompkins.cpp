@@ -7,8 +7,8 @@
 
 	typedef int dataType;
 
-	const std::deque<size_t> detectQpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & rpeaks);
-	const std::deque<size_t> detectSpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & rpeaks);
+	const std::deque<size_t> detectQpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks);
+	const std::deque<size_t> detectSpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks);
 
 	struct panTompkins
 	{
