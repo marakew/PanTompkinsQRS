@@ -10,12 +10,12 @@ typedef int dataType;
 #define FS 360	// Sampling frequency.
 
 
-	dataType findMax(size_t i, std::deque<dataType> & signal)
+	dataType findMax(size_t i, std::deque<dataType> & values)
 	{
 		assert(i>=10);
 		dataType max_value = 0;
 		for (size_t j = i - 10; j <= i; ++j)
-			if (signal[j] > max_value) max_value = signal[j];
+			if (values[j] > max_value) max_value = values[j];
 		return max_value;
 	}
 
