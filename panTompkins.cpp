@@ -121,9 +121,9 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 	//TODO for another fs
 	std::deque<dataType> bandpass = highpass;
 
-	qpeaks.clear();
+	//qpeaks.clear();
 	rpeaks.clear();
-	speaks.clear();
+	//speaks.clear();
 
 	//TODO calculate sum delay by filters and flush peaks from begin
 
@@ -135,12 +135,34 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 
 void panTompkins::detectQpeaks(const std::deque<dataType> & bandpass)
 {
-	//TODO find left min
+	qpeaks.clear();
+	for (size_t i = 0; i < rpeaks.size(); ++i)
+	{
+		size_t n = rpeaks[i];
+		if (n-1<0) break;
+		while(bandpass[n]>bandpass[n-1])
+		{
+			--n;
+			if (n<0) break
+		}
+		qpeaks.push_back(n);
+	}
 }
 
 void panTompkins::detectSpeaks(const std::deque<dataType> & bandpass)
 {
-	//TODO find right min
+	speaks.clear();
+	for (size_t i = 0; i < rpeaks.size(); ++i)
+	{
+		size_t n = rpeaks[i];
+		if (n+1>=bandpass.size()) break;
+		while(bandpass[n]>bandpass[n+1])
+		{
+			++n;
+			if (n>=bandpass.size()) break
+		}
+		speaks.push_back(n);
+	}
 }
 
 void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
@@ -164,6 +186,8 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 	dataType lastSlope = 0;
 
 	regular = true;
+
+	rpeaks.clear();
 
 	std::deque<bool> peaks;
 
@@ -273,7 +297,6 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 		peaks[current] = qrs;
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
-
 
 	for (size_t i = 0; i < peaks.size(); ++i)
 	{
