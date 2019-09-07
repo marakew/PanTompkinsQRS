@@ -5,16 +5,7 @@
 #include "threshold.h"
 #include "filters.h"
 
-typedef int dataType;
-
-	dataType findMax(size_t i, std::deque<dataType> & values)
-	{
-		assert(i>=10);
-		dataType max_value = 0;
-		for (size_t j = i - 10; j <= i; ++j)
-			if (values[j] > max_value) max_value = values[j];
-		return max_value;
-	}
+	typedef int dataType;
 
 	struct panTompkins
 	{
@@ -23,6 +14,7 @@ typedef int dataType;
 		size_t window;
 		size_t rrmin;
 		size_t rrmax;
+		size_t slopemax;
 		
 		threshold<dataType> threshold_i;
 		threshold<dataType> threshold_f;
@@ -46,6 +38,7 @@ typedef int dataType;
 		window(0.15*fs),
 		rrmin(0.2*fs),
 		rrmax(0.36*fs),
+		slopemax(0.75*fs),
 		
 	{
 	}
@@ -53,6 +46,15 @@ typedef int dataType;
 		void detectPeaks(const std::deque<dataType> & signal);
 
 	private:
+		dataType findMaxSlope(size_t i, std::deque<dataType> & values)
+		{
+			assert(i>=slopemax);
+			dataType max_value = 0;
+			for (size_t j = i - slopemax; j <= i; ++j)
+				if (values[j] > max_value) max_value = values[j];
+			return max_value;
+		}
+
 		void detectQpeaks(const std::deque<dataType> & bandpass);
 		void detectRpeaks(const std::deque<dataType> & bandpass);
 		void detectSpeaks(const std::deque<dataType> & bandpass);
@@ -174,7 +176,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 		{
 			if (sample - lastQRS > rrmin)
 			{
-				dataType currentSlope = findMax(current, squared);
+				dataType currentSlope = findMaxSlope(current, squared);
 				if (sample - lastQRS <= rrmax)
 				{
 					if (currentSlope <= lastSlope/2)
@@ -224,7 +226,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 					if ( (integral[i] > threshold_i.i2) &&
 					     (bandpass[i] > threshold_f.i2))
 					{
-						dataType currentSlope = findMax(i, squared);
+						dataType currentSlope = findMaxSlope(i, squared);
 						if (
 							(currentSlope < lastSlope/2) &&
 							(i + sample) < lastQRS + 0.36*lastQRS)
