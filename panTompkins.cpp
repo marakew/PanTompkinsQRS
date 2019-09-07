@@ -127,8 +127,18 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 
 	detectRpeaks(bandpass);
 
-	detectQpeaks(bandpass);
-	detectSpeaks(bandpass);
+	detectQpeaks(bandpass); //left Min
+	detectSpeaks(bandpass);	//right Min
+}
+
+void panTompkins::detectQpeaks(const std::deque<dataType> & bandpass)
+{
+	//TODO
+}
+
+void panTompkins::detectSpeaks(const std::deque<dataType> & bandpass)
+{
+	//TODO
 }
 
 void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
@@ -153,7 +163,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 
 	regular = true;
 
-	for (size_t current = 0; current < signal.size(); ++current)
+	for (size_t current = 0; current < bandpass.size(); ++current)
 	{
 		bool qrs = false;
 
