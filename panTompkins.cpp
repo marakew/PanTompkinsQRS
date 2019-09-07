@@ -7,9 +7,6 @@
 
 	typedef int dataType;
 
-	const std::deque<size_t> detectQpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks);
-	const std::deque<size_t> detectSpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks);
-
 	struct panTompkins
 	{
 	private:
@@ -105,6 +102,40 @@
 
 	};
 
+const std::deque<size_t> findLeftMin(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks)
+{
+	std::deque<size_t> result;
+	for (size_t i = 0; i < peaks.size(); ++i)
+	{
+		size_t n = peaks[i];
+		if (n-1<0) break;
+		while(bandpass[n]>bandpass[n-1])
+		{
+			--n;
+			if (n<0) break;
+		}
+		result.push_back(n);
+	}
+	return result;
+}
+
+const std::deque<size_t> findRightMin(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks)
+{
+	std::deque<size_t> result;
+	for (size_t i = 0; i < peaks.size(); ++i)
+	{
+		size_t n = peaks[i];
+		if (n+1>=bandpass.size()) break;
+		while(bandpass[n]>bandpass[n+1])
+		{
+			++n;
+			if (n>=bandpass.size()) break;
+		}
+		result.push_back(n);
+	}
+	return result;
+}
+
 void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 {
 	if (signal.size() < samplefrequency*2)
@@ -130,42 +161,8 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 
 	detectRpeaks(bandpass);
 
-	qpeaks = detectQpeaks(bandpass, rpeaks); //left Min
-	speaks = detectSpeaks(bandpass, rpeaks); //right Min
-}
-
-const std::deque<size_t> detectQpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks)
-{
-	std::deque<size_t> result;
-	for (size_t i = 0; i < peaks.size(); ++i)
-	{
-		size_t n = peaks[i];
-		if (n-1<0) break;
-		while(bandpass[n]>bandpass[n-1])
-		{
-			--n;
-			if (n<0) break;
-		}
-		result.push_back(n);
-	}
-	return result;
-}
-
-const std::deque<size_t> detectSpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks)
-{
-	std::deque<size_t> result;
-	for (size_t i = 0; i < peaks.size(); ++i)
-	{
-		size_t n = peaks[i];
-		if (n+1>=bandpass.size()) break;
-		while(bandpass[n]>bandpass[n+1])
-		{
-			++n;
-			if (n>=bandpass.size()) break;
-		}
-		result.push_back(n);
-	}
-	return result;
+	qpeaks = findLeftMin(bandpass, rpeaks);
+	speaks = findRightMin(bandpass, rpeaks);
 }
 
 void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
