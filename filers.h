@@ -1,6 +1,7 @@
 #ifndef _fillers_h_
 #define _fillers_h_
 #endif
+	template<typename dataType>
 	void normalize(std::deque<dataType> & values)
 	{
 		dataType max_value = values[0];
@@ -12,7 +13,7 @@
 	}
 
 	// DC filter
-
+	template<typename dataType>
 	std::deque<dataType> dcFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
@@ -28,7 +29,7 @@
 	// Low Pass filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = 2y(nT - T) - y(nT - 2T) + x(nT) - 2x(nT - 6T) + x(nT - 12T)
-
+	template<typename dataType>
 	std::deque<dataType> lowPassFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
@@ -47,7 +48,7 @@
 	// High Pass filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = 32x(nT - 16T) - [y(nT - T) + x(nT) - x(nT - 32T)]
-
+	template<typename dataType>
 	std::deque<dataType> highPassFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
@@ -66,7 +67,7 @@
 	// Derivative filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/8T)[-x(nT - 2T) - 2x(nT - T) + 2x(nT + T) + x(nT + 2T)]
-
+	template<typename dataType>
 	std::deque<dataType> derivativeFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
@@ -90,7 +91,7 @@
 	// Squared filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = [x(nT)]^2.
-
+	template<typename dataType>
 	std::deque<dataType> squaredFilter(const std::deque<dataType> & signal)
 	{
 		std::deque<dataType> result;
@@ -106,7 +107,7 @@
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/N)[x(nT - (N - 1)T) + x(nT - (N - 2)T) + ... x(nT)]
 	// N, in samples, must be defined so that the window is ~150ms.
-
+	template<typename dataType>
 	std::deque<dataType> MWI(const std::deque<dataType> & signal, size_t N)
 	{
 		std::deque<dataType> result;
