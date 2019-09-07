@@ -39,8 +39,6 @@ typedef int dataType;
 		int rrmiss = 0;
 
 		bool regular = true;
-
-		//std::list<std::unique_ptr<Filter>> filters;
 	public:
 
 	explicit panTompkins(size_t fs) :
@@ -50,12 +48,6 @@ typedef int dataType;
 		rrmax(0.36*fs),
 		
 	{
-		//filters.push_back(std::make_unique<DCFilter>);
-		//filters.push_back(std::make_unique<LowPassFilter>);
-		//filters.push_back(std::make_unique<HighPassFilter>);
-		//filters.push_back(std::make_unique<DerivativeFilter>);
-		//filters.push_back(std::make_unique<SquaredFilter>);
-		//filters.push_back(std::make_unique<MWI>);
 	}
 
 	std::deque<bool> detect(const std::deque<dataType> & signal);
@@ -111,10 +103,6 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 	if (signal.size() < samplefrequency*2)
 		throw std::length_error("input signal too short");
 
-	//TODO
-	//std::deque<dataType> datas = signal;
-	//for (auto filter : filters) datas = filter.process(datas);
-
 	// DC was not proposed on the original paper.
 	// It is not necessary and can be removed if your sensor or database has no DC noise.
 	std::deque<dataType> dcblock = dcFilter(signal);
@@ -142,20 +130,20 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 		rr2[i] = 0;
 	}
 
-	long unsigned int i;
+	size_t i;
 
-	long unsigned int lastQRS = 0;
+	size_t lastQRS = 0;
 	dataType lastSlope = 0;
 
 	regular = true;
 
 	std::deque<bool> rpeaks;
 
-	for (long unsigned int current = 0; current < signal.size(); ++current)
+	for (size_t current = 0; current < signal.size(); ++current)
 	{
 		bool qrs = false;
 
-		long unsigned int sample = current+1; //???
+		size_t sample = current+1; //???
 
 		if ((integral[current] >= threshold_i.i1) &&
 		    (bandpass[current] >= threshold_f.i1))
@@ -200,12 +188,12 @@ std::deque<bool> panTompkins::detect(const std::deque<dataType> & signal)
 		} else
 		{
 			//back search
-			if ((sample - lastQRS > (long unsigned int)rrmiss) &&
+			if ((sample - lastQRS > (size_t)rrmiss) &&
 			    (sample - lastQRS > rrmin))
 			{
 				//do search
 				for (i = current - (sample - lastQRS) + rrmin;
-					i < (long unsigned int)current;
+					i < (size_t)current;
 					++i)
 				{
 					if ( (integral[i] > threshold_i.i2) &&

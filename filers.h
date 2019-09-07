@@ -1,19 +1,6 @@
 #ifndef _fillers_h_
 #define _fillers_h_
 #endif
-	struct Filter
-	{
-		std::deque<dataType> process(const std::deque<dataType> & signal) = 0;
-		size_t delay() = 0;
-	};
-
-	struct DCFilter : public Filter	{ };
-	struct LowPassFilter : public Filter { };
-	struct HighPassFilter : public Filter { };
-	struct DerivativeFilter : public Filter { };
-	struct SquaredFilter : public Filter { };
-	struct MWI : public Filter { };
-
 	void normalize(std::deque<dataType> & values)
 	{
 		dataType max_value = values[0];
@@ -24,7 +11,7 @@
 			values[i] /= max_value;
 	}
 
-	// DC filter, delay 1
+	// DC filter
 
 	std::deque<dataType> dcFilter(const std::deque<dataType> & signal)
 	{
@@ -38,7 +25,7 @@
 		return result;
 	}
 
-	// Low Pass filter, delay 12	6!
+	// Low Pass filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = 2y(nT - T) - y(nT - 2T) + x(nT) - 2x(nT - 6T) + x(nT - 12T)
 
@@ -57,7 +44,7 @@
 		return result;
 	}
 
-	// High Pass filter, delay 32	16!
+	// High Pass filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = 32x(nT - 16T) - [y(nT - T) + x(nT) - x(nT - 32T)]
 
@@ -76,7 +63,7 @@
 	}
 
 
-	// Derivative filter, delay 4	5!
+	// Derivative filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/8T)[-x(nT - 2T) - 2x(nT - T) + 2x(nT + T) + x(nT + 2T)]
 
@@ -100,7 +87,7 @@
 		return result;
 	}
 
-	// Squared filter, delay 0
+	// Squared filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = [x(nT)]^2.
 
