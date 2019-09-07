@@ -24,22 +24,27 @@
 			//i2 = 0.5 * i1; //??? imp - no, algo - yes
 		}
 
+		void update()
+		{
+			set(thresh(spk, npk));
+		}
+
 		void updateNoise(const dataType peak)
 		{
 			npk = 0.125 * peak + 0.875 * npk;
-			set(thresh(spk, npk));
+			update();
 		}
 
 		void updateSignal(const dataType peak)
 		{
 			spk = 0.125 * peak + 0.875 * spk;
-			set(thresh(spk, npk));
+			update();
 		}
 
 		void updateSignalSearchBack(const dataType peak)
 		{
 			spk = 0.25 * peak + 0.75 * spk;
-			set(thresh(spk, npk));
+			update();
 		}
 	};
 
