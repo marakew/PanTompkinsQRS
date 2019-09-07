@@ -7,6 +7,9 @@
 
 	typedef int dataType;
 
+	const std::deque<size_t> detectQpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & rpeaks);
+	const std::deque<size_t> detectSpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & rpeaks);
+
 	struct panTompkins
 	{
 	private:
@@ -55,9 +58,7 @@
 			return max_value;
 		}
 
-		void detectQpeaks(const std::deque<dataType> & bandpass);
 		void detectRpeaks(const std::deque<dataType> & bandpass);
-		void detectSpeaks(const std::deque<dataType> & bandpass);
 
 		void updateRR(int index)
 		{
@@ -122,47 +123,49 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 	std::deque<dataType> bandpass = highpass;
 
 	//qpeaks.clear();
-	rpeaks.clear();
+	//rpeaks.clear();
 	//speaks.clear();
 
 	//TODO calculate sum delay by filters and flush peaks from begin
 
 	detectRpeaks(bandpass);
 
-	detectQpeaks(bandpass); //left Min
-	detectSpeaks(bandpass);	//right Min
+	qpeaks = detectQpeaks(bandpass, rpeaks); //left Min
+	speaks = detectSpeaks(bandpass, rpeaks); //right Min
 }
 
-void panTompkins::detectQpeaks(const std::deque<dataType> & bandpass)
+const std::deque<size_t> detectQpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks)
 {
-	qpeaks.clear();
-	for (size_t i = 0; i < rpeaks.size(); ++i)
+	std::deque<size_t> result;
+	for (size_t i = 0; i < peaks.size(); ++i)
 	{
-		size_t n = rpeaks[i];
+		size_t n = peaks[i];
 		if (n-1<0) break;
 		while(bandpass[n]>bandpass[n-1])
 		{
 			--n;
 			if (n<0) break;
 		}
-		qpeaks.push_back(n);
+		result.push_back(n);
 	}
+	return result;
 }
 
-void panTompkins::detectSpeaks(const std::deque<dataType> & bandpass)
+const std::deque<size_t> detectSpeaks(const std::deque<dataType> & bandpass, const std::deque<size_t> & peaks)
 {
-	speaks.clear();
-	for (size_t i = 0; i < rpeaks.size(); ++i)
+	std::deque<size_t> result;
+	for (size_t i = 0; i < peaks.size(); ++i)
 	{
-		size_t n = rpeaks[i];
+		size_t n = peaks[i];
 		if (n+1>=bandpass.size()) break;
 		while(bandpass[n]>bandpass[n+1])
 		{
 			++n;
 			if (n>=bandpass.size()) break;
 		}
-		speaks.push_back(n);
+		result.push_back(n);
 	}
+	return result;
 }
 
 void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
