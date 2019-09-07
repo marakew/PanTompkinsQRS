@@ -7,9 +7,6 @@
 
 typedef int dataType;
 
-#define FS 360	// Sampling frequency.
-
-
 	dataType findMax(size_t i, std::deque<dataType> & values)
 	{
 		assert(i>=10);
@@ -41,7 +38,7 @@ typedef int dataType;
 		bool regular = true;
 	public:
 
-	explicit panTompkins(size_t fs) :
+	explicit panTompkins(size_t fs = 360) :
 		samplefrequency(fs),
 		window(0.15*fs),
 		rrmin(0.2*fs),
