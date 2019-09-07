@@ -1,6 +1,9 @@
 #ifndef _threshold_h_
 #define _threshold_h_
 
+	inline dataType thresh(const dataType signal, const dataType noise) 
+		{ return noise + 0.25 * (signal - noise); }
+
 	template<typename dataType>
 	struct threshold
 	{
@@ -8,9 +11,6 @@
 		dataType i2 = 0;
 		dataType spk = 0;
 		dataType npk = 0;
-
-		dataType thresh(const dataType signal, const dataType noise) const
-				{ return noise + 0.25 * (signal - noise); }
 
 		void set(dataType i)
 		{
