@@ -143,7 +143,7 @@ void panTompkins::detectQpeaks(const std::deque<dataType> & bandpass)
 		while(bandpass[n]>bandpass[n-1])
 		{
 			--n;
-			if (n<0) break
+			if (n<0) break;
 		}
 		qpeaks.push_back(n);
 	}
@@ -159,7 +159,7 @@ void panTompkins::detectSpeaks(const std::deque<dataType> & bandpass)
 		while(bandpass[n]>bandpass[n+1])
 		{
 			++n;
-			if (n>=bandpass.size()) break
+			if (n>=bandpass.size()) break;
 		}
 		speaks.push_back(n);
 	}
