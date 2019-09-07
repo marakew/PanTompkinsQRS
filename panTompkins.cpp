@@ -176,7 +176,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 		{
 			if (sample - lastQRS > rrmin)
 			{
-				dataType currentSlope = findMaxSlope(current, squared);
+				dataType currentSlope = findMaxSlope(current, squared); //integral
 				if (sample - lastQRS <= rrmax)
 				{
 					if (currentSlope <= lastSlope/2)
@@ -227,7 +227,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 					if ( (integral[i] > threshold_i.i2) &&
 					     (bandpass[i] > threshold_f.i2))
 					{
-						dataType currentSlope = findMaxSlope(i, squared);
+						dataType currentSlope = findMaxSlope(i, squared); //integral
 						if (
 							(currentSlope < lastSlope/2) &&
 							(i + sample) < lastQRS + 0.36*lastQRS)
