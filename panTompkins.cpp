@@ -136,6 +136,9 @@ const std::deque<size_t> findRightMin(const std::deque<dataType> & bandpass, con
 	return result;
 }
 
+	// input signal 900-1000
+	// TODO normalize input -2..+2 
+
 void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 {
 	if (signal.size() < samplefrequency*2)
