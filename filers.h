@@ -77,7 +77,7 @@
 	template<typename dataType>
 	std::deque<dataType> derivativeFilter(const std::deque<dataType> & signal, size_t fs = 1)
 	{
-		double T = 1.0/fs;
+		double T = 1.0/fs; //???
 		std::deque<dataType> result;
 		for (size_t index = 2; index < signal.size() - 2; ++index)
 		{
