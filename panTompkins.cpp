@@ -147,10 +147,11 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 
 	//1) Bandpass filter = LP + HP filter, filters work only for 200 Hz sampling rate
 	std::deque<dataType> lowpass = lowPassFilter(dcblock); 
+	//??? normalize(lowpass);
 	std::deque<dataType> highpass = highPassFilter(lowpass);
 	//??? normalize(highpass);
 
-	//TODO for another fs
+	//TODO for another fs 5,15
 	std::deque<dataType> bandpass = highpass;
 
 	//qpeaks.clear();
@@ -168,7 +169,7 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 {
 	//2) Differentiator
-	std::deque<dataType> derivative = derivativeFilter(bandpass);
+	std::deque<dataType> derivative = derivativeFilter(bandpass); //???, samplefrequency);
 	//??? normalize(derivative);
 
 	//3) Squaring

@@ -68,14 +68,15 @@
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/8T)[-x(nT - 2T) - 2x(nT - T) + 2x(nT + T) + x(nT + 2T)]
 	template<typename dataType>
-	std::deque<dataType> derivativeFilter(const std::deque<dataType> & signal)
+	std::deque<dataType> derivativeFilter(const std::deque<dataType> & signal, size_t fs = 1)
 	{
+		double T = 1.0/fs;
 		std::deque<dataType> result;
 		for (size_t index = 2; index < signal.size() - 2; ++index)
 		{
 			dataType value = -signal[index - 2] - 2 * signal[index - 1] +
 					2 * signal[index + 1] + signal[index + 2];
-			value /= 8.0;
+			value /= (8.0 * T);
 			result.push_back(value);
 		}
 		dataType value;
