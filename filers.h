@@ -64,11 +64,59 @@
 	}
 
 
-	template<typename dataType>
-	std::deque<dataType> bandPassFilter(const std::deque<dataType> & signal, double low, double high, double rate)
+	struct BandFilter
 	{
-		//TODO 5,15 hz
-		return signal;
+		double b0, b1, b2,
+			a1, a2;
+		double x0, x1, x2,
+			y1, y2;
+
+		reset()
+		{
+			x0 = 0; x1 = 0; x2 = 0; y1 = 0; y2 = 0;
+		}
+
+		BandFilter(double cutoff, bool hp)
+		{
+			const double B = tan(cutoff * M_PI);
+			const double BB = B * B;
+			const double S = 1.0 + M_SQRT2 * B + BB;
+
+			if (hp) {
+				b0 = 1.0 / S;
+				b1 = -2.0 * b0;
+			} else {
+				b0 = BB / S;
+				b1 = 2.0 * b0;
+			}
+			b2 = b0;
+			a1 = 2.0 * (BB - 1.0) / S;
+			a2 = (1.0 - M_SQRT2 * B + BB) / S;			
+		}
+
+		void filter(std::deque<dataType> & signal)
+		{
+			for (size_t i = 0; i < signal.size(); ++i)
+			{
+				x2 = x1;
+				x1 = x0;
+				x0 = signal[i];
+				signal[i] = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+				y2 = y1;
+				y1 = signal[i];
+			}
+		}
+	};
+
+	template<typename dataType>
+	std::deque<dataType> bandPassFilter(const std::deque<dataType> & signal, double lowcut, double highcut, double rate)
+	{
+		std::deque<dataType> result = signal;
+		BandFilter lowPass(lowcut/rate, false);
+		lowPass.filter(result);
+		BandFilter highPass(highcut/rate, true);
+		highPass.filter(result);
+		return result;
 	}
 
 	// Derivative filter

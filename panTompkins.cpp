@@ -151,7 +151,9 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 	std::deque<dataType> highpass = highPassFilter(lowpass);
 	//??? normalize(highpass);
 
-	std::deque<dataType> bandpass = bandPassFilter(highpass, 5.0, 15.0, samplefrequency);
+	const double LOW_CUT = 5.0;
+	const double HIGH_CUT = 15.0;
+	std::deque<dataType> bandpass = bandPassFilter(highpass, LOW_CUT, HIGH_CUT, samplefrequency/2); //???
 
 	//qpeaks.clear();
 	//rpeaks.clear();
