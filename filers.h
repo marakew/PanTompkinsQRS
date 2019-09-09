@@ -38,8 +38,8 @@
 			dataType value = signal[index];
 			if (index >= 1) value += 2 * result[index - 1];
 			if (index >= 2) value -= result[index - 2];
-			if (index >= 6) value -= 2 * result[index - 6];
-			if (index >= 12) value += result[index - 12];
+			if (index >= 6) value -= 2 * signal[index - 6];
+			if (index >= 12) value += signal[index - 12];
 			result.push_back(value);
 		}
 		return result;
@@ -56,8 +56,8 @@
 		{
 			dataType value = -signal[index];
 			if (index >= 1) value -= result[index - 1];
-			if (index >= 16) value += 32 * result[index - 16];
-			if (index >= 32) value += result[index - 32];
+			if (index >= 16) value += 32 * signal[index - 16];
+			if (index >= 32) value += signal[index - 32];
 			result.push_back(value);
 		}
 		return result;
