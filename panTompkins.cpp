@@ -189,7 +189,7 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 
 	rpeaks.clear();
 
-	std::deque<bool> peaks;
+	std::deque<bool> peaks(bandpass.size());
 
 	for (size_t current = 0; current < bandpass.size(); ++current)
 	{
