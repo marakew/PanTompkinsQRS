@@ -64,6 +64,13 @@
 	}
 
 
+	template<typename dataType>
+	std::deque<dataType> bandPassFilter(const std::deque<dataType> & signal, double low, double high, double rate)
+	{
+		//TODO 5,15 hz
+		return signal;
+	}
+
 	// Derivative filter
 	// Implemented as proposed by the original paper.
 	// y(nT) = (1/8T)[-x(nT - 2T) - 2x(nT - T) + 2x(nT + T) + x(nT + 2T)]
