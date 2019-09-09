@@ -300,10 +300,15 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
 
+	size_t delay = 0; //TODO
+
 	for (size_t i = 0; i < peaks.size(); ++i)
 	{
 		if (peaks[i])
-			rpeaks.push_back(i);
+		{
+			assert(i>delay)
+			rpeaks.push_back(i-delay);
+		}
 	}
 }
 
