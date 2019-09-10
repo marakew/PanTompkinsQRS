@@ -64,11 +64,12 @@
 	}
 
 
+	template<typename T = double>
 	struct BandFilter
 	{
 		double b0, b1, b2,
 			a1, a2;
-		double x[2], y[2];
+		T x[2], y[2];
 
 		enum Type {LOWPASS,HIGHPASS,BANDPASS}; //TODO expand a new
 
@@ -100,7 +101,7 @@
 			a2 = (1.0 - M_SQRT2 * B + BB) / S;			
 		}
 
-		double process(double input)
+		T process(T input)
 		{
 			//IIR
 			double out = b0*input + b1*x[0] + b2*x[1] - a1*y[0] - a2*y[1];
