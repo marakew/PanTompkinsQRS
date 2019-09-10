@@ -94,16 +94,22 @@
 			a2 = (1.0 - M_SQRT2 * B + BB) / S;			
 		}
 
+		double process(double input)
+		{
+			x2 = x1;
+			x1 = x0;
+			x0 = input;
+			double out = b0*x0 + b1*x1 + b2*x2 - a1*y1 - a2*y2;
+			y2 = y1;
+			y1 = out;
+			return out;
+		}
+
 		void filter(std::deque<dataType> & signal)
 		{
 			for (size_t i = 0; i < signal.size(); ++i)
 			{
-				x2 = x1;
-				x1 = x0;
-				x0 = signal[i];
-				signal[i] = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
-				y2 = y1;
-				y1 = signal[i];
+				signal[i] = process(signal[i]);
 			}
 		}
 	};
