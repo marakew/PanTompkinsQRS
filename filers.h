@@ -68,24 +68,30 @@
 	{
 		double b0, b1, b2,
 			a1, a2;
-		double x0, x1, x2,
-			y1, y2;
+		double x[2], y[2];
+
+		enum Type {LOWPASS,HIGHPASS,BANDPASS}; //TODO expand a new
 
 		reset()
 		{
-			x0 = 0; x1 = 0; x2 = 0; y1 = 0; y2 = 0;
+			x[0] = 0; x[1] = 0;
+			y[0] = 0; y[1] = 0;
 		}
 
-		BandFilter(double cutoff, bool hp)
+		BandFilter(double cutoff, Type type)
 		{
+			reset();
+
 			const double B = tan(cutoff * M_PI);
+
 			const double BB = B * B;
 			const double S = 1.0 + M_SQRT2 * B + BB;
 
-			if (hp) {
+			if (type == HIGHPASS) {
 				b0 = 1.0 / S;
 				b1 = -2.0 * b0;
-			} else {
+			} else
+			if (type == LOWPASS) {
 				b0 = BB / S;
 				b1 = 2.0 * b0;
 			}
@@ -96,12 +102,14 @@
 
 		double process(double input)
 		{
-			x2 = x1;
-			x1 = x0;
-			x0 = input;
-			double out = b0*x0 + b1*x1 + b2*x2 - a1*y1 - a2*y2;
-			y2 = y1;
-			y1 = out;
+			//IIR
+			double out = b0*input + b1*x[0] + b2*x[1] - a1*y[0] - a2*y[1];
+			//add input
+			x[1] = x[0];
+			x[0] = input;
+			//add outut
+			y[1] = y[0];
+			y[0] = out;
 			return out;
 		}
 
@@ -118,9 +126,9 @@
 	std::deque<dataType> bandPassFilter(const std::deque<dataType> & signal, double lowcut, double highcut, double rate)
 	{
 		std::deque<dataType> result = signal;
-		BandFilter lowPass(lowcut/rate, false);
+		BandFilter lowPass(lowcut/rate, BandFilter::LOWPASS);
 		lowPass.filter(result);
-		BandFilter highPass(highcut/rate, true);
+		BandFilter highPass(highcut/rate, BandFilter::HIGHPASS);
 		highPass.filter(result);
 		return result;
 	}
