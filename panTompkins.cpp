@@ -55,7 +55,7 @@
 			return max_value;
 		}
 
-		void detectRpeaks(const std::deque<dataType> & bandpass);
+		void detectRpeaks(const std::deque<dataType> & bandpass, size_t delay);
 
 		void updateRR(int index)
 		{
@@ -163,14 +163,15 @@ void panTompkins::detectPeaks(const std::deque<dataType> & signal)
 	//speaks.clear();
 
 	//TODO calculate sum delay by filters and flush peaks from begin
+	size_t delay = 0; //TODO
 
-	detectRpeaks(bandpass);
+	detectRpeaks(bandpass, delay);
 
 	qpeaks = findLeftMin(bandpass, rpeaks);
 	speaks = findRightMin(bandpass, rpeaks);
 }
 
-void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
+void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass, size_t delay)
 {
 	//2) Differentiator
 	std::deque<dataType> derivative = derivativeFilter(bandpass); //???, samplefrequency);
@@ -302,8 +303,6 @@ void panTompkins::detectRpeaks(const std::deque<dataType> & bandpass)
 		peaks[current] = qrs;
 		//if (sample > DELAY + BUFFSIZE) output(rpeaks[0]);
 	}
-
-	size_t delay = 0; //TODO
 
 	for (size_t i = 0; i < peaks.size(); ++i)
 	{
